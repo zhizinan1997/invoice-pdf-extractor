@@ -2,6 +2,10 @@
 
 一个基于 Streamlit 的中国发票 PDF 数据提取工具。用户上传一个或多个 PDF 后，系统会先用 `pdf2image` 把每一页转换为图片，再调用 OpenAI `gpt-4o` 进行视觉识别，最后把所有商品明细合并导出为 Excel。
 
+仓库地址：
+
+- `https://github.com/zhizinan1997/invoice-pdf-extractor`
+
 ## 功能特性
 
 - 密码登录保护，未验证前不显示上传界面
@@ -55,6 +59,8 @@ streamlit run app.py
 
 ## Docker 运行
 
+### 方式一：本地构建后运行
+
 构建镜像：
 
 ```bash
@@ -64,18 +70,67 @@ docker build -t invoice-pdf-extractor .
 使用 `.env` 启动容器：
 
 ```bash
-docker run --rm -p 8501:8501 --env-file .env invoice-pdf-extractor
+docker run -d \
+  --name invoice-pdf-extractor \
+  --restart unless-stopped \
+  -p 8501:8501 \
+  --env-file .env \
+  invoice-pdf-extractor
+```
+
+查看容器日志：
+
+```bash
+docker logs -f invoice-pdf-extractor
+```
+
+停止并删除容器：
+
+```bash
+docker stop invoice-pdf-extractor
+docker rm invoice-pdf-extractor
+```
+
+### 方式二：从 GHCR 直接运行
+
+如果你已经发布了 GitHub Release，并且镜像已推送到 GHCR，可以直接拉取运行。
+
+先登录 GHCR：
+
+```bash
+docker login ghcr.io -u zhizinan1997
+```
+
+说明：
+
+- 如果镜像是私有的，需要输入一个带 `read:packages` 权限的 GitHub Personal Access Token 作为密码
+
+拉取镜像：
+
+```bash
+docker pull ghcr.io/zhizinan1997/invoice-pdf-extractor:latest
+```
+
+运行容器：
+
+```bash
+docker run -d \
+  --name invoice-pdf-extractor \
+  --restart unless-stopped \
+  -p 8501:8501 \
+  --env-file .env \
+  ghcr.io/zhizinan1997/invoice-pdf-extractor:latest
 ```
 
 ## GitHub Actions 与 GHCR
 
 - `CI` 工作流会在推送到 `main` 或创建 Pull Request 时执行依赖安装、语法检查和 Docker 构建。
-- `Release Image` 工作流会在 GitHub 上发布 Release 后自动把镜像推送到 `ghcr.io/<owner>/<repo>`。
+- `Release Image` 工作流会在 GitHub 上发布 Release 后自动把镜像推送到 `ghcr.io/zhizinan1997/invoice-pdf-extractor`。
 - 建议使用语义化版本标签，例如 `v1.0.0`。当发布这个版本的 GitHub Release 时，镜像会自动生成类似标签：
-  - `ghcr.io/<owner>/<repo>:v1.0.0`
-  - `ghcr.io/<owner>/<repo>:1.0.0`
-  - `ghcr.io/<owner>/<repo>:1.0`
-  - `ghcr.io/<owner>/<repo>:latest`
+  - `ghcr.io/zhizinan1997/invoice-pdf-extractor:v1.0.0`
+  - `ghcr.io/zhizinan1997/invoice-pdf-extractor:1.0.0`
+  - `ghcr.io/zhizinan1997/invoice-pdf-extractor:1.0`
+  - `ghcr.io/zhizinan1997/invoice-pdf-extractor:latest`
 
 ## Excel 输出
 
